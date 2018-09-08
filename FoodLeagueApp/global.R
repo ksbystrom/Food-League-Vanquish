@@ -1,23 +1,21 @@
 library(dplyr)
 
-allzips <- readRDS("data/superzip.rds")
-allzips$latitude <- jitter(allzips$latitude)
-allzips$longitude <- jitter(allzips$longitude)
-allzips$college <- allzips$college * 100
-allzips$zipcode <- formatC(allzips$zipcode, width=5, format="d", flag="0")
-row.names(allzips) <- allzips$zipcode
+bikemaps <- read.csv("data/Bikemaps(collision).csv")
 
-cleantable <- allzips %>%
+cleantable <- bikemaps %>%
   select(
-    City = city.x,
-    State = state.x,
-    Zipcode = zipcode,
-    Rank = rank,
-    Score = centile,
-    Superzip = superzip,
-    Population = adultpop,
-    College = college,
-    Income = income,
-    Lat = latitude,
-    Long = longitude
+    Type = i_type,
+    With = incident_with,
+    Date = date,
+    Details = details,
+    Riding = riding_on,
+    Terrain = terrain,
+    Direction = direction,    
+    Turning = turning,
+    Age = age,
+    Sex = sex,
+    Longitude = longitude,
+    Latitude = latitude,
+    X = X,
+    Y = Y
   )
