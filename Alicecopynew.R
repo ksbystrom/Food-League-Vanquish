@@ -152,6 +152,58 @@ wordcloudFUN = function(newdataframe){
   return(newdataframe)
   
 }
+clusteringFUN= function(newdataframe)
+{
+  details<- newdataframe$details
+  
+  ## creating clustering function 
+  details_source <- VectorSource(details)
+  
+  # Make a volatile corpus: details_corpus
+  details_corpus <- VCorpus(details_source)
+  
+  # Print out details_corpus
+  details_corpus
+  
+  # Print the content of the 15th tweet in details_corpus
+  details_corpus[[15]]$content
+  
+  clean_corp <- clean_corpus(details_corpus)
+  clean_corp[[20]][1]
+  
+  
+  
+  # Create the dtm from the corpus: details_dtm
+  clean_corp
+  
+  details_dtm <- DocumentTermMatrix(clean_corp)
+  
+  # Print out coffee_dtm data
+  details_dtm
+  
+  
+  # Convert coffee_dtm to a matrix: coffee_m
+  details_m <- as.matrix(details_dtm)
+  
+  # Print the dimensions of coffee_m
+  dim(details_m)
+  
+  # Review a portion of the matrix
+  details_m[14:16, 100:105]
+  
+  
+  # Create a TDM from clean_corp: coffee_tdm
+  details_tdm <- TermDocumentMatrix(clean_corp)
+  
+  
+  details_tdm2 <- removeSparseTerms(details_tdm, sparse = 0.975)
+  
+  hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete") 
+  
+  # Plot a dendrogram
+  plot(hc)
+  
+}
 
 ############################################################################
 
@@ -171,6 +223,7 @@ head(BMColCleanData,4)
 
 FrequencyPlotFUN(BMColCleanData)
 wordcloudFUN(BMColCleanData)
+clusteringFUN(BMColCleanData)
 
 
 
@@ -180,6 +233,7 @@ BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
 BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
 FrequencyPlotFUN(BMnearmissCleanData)
 wordcloudFUN(BMnearmissCleanData)
+clusteringFUN(BMnearmissCleanData)
 
 
 
@@ -195,14 +249,12 @@ BMHazCleanData<- datacleanFun(Bikemapshazards$date ,Bikemapshazards$details, Bik
 head(BMHazCleanData,4)
 FrequencyPlotFUN(BMHazCleanData)
 wordcloudFUN(BMHazCleanData)
-
+clusteringFUN(BMHazCleanData)
 
 
 
  ############################################################################
- 
- 
- 
+
  
  
 
