@@ -2,9 +2,9 @@
 ## Vanquish 
 ## September 7, 2018 
 
-write.csv(Traffic_20Counts_2FPERM_PEDESTRIAN_CT,"TrafficCountPedes.csv")
-write.csv(TrafficCounts_Bikes,"TrafficCountbikes.csv")
-
+#write.csv(Traffic_20Counts_2FPERM_PEDESTRIAN_CT,"TrafficCountPedes.csv")
+#write.csv(TrafficCounts_Bikes,"TrafficCountbikes.csv")
+#library(quanteda)
 ############################# INJURY DATA ############################
 
 
@@ -17,7 +17,7 @@ x <- injdata$Modes
 x <- as.character(x)
 
 
-#adding a character split for single cells
+#adding a character split for single variables
 x[x == "Single Cyl"  ] <- "Single Cyl- 0" 
 x[x == "Single Veh"  ] <- "Single Veh- 0" 
 x[x == "Single Mot"  ] <- "Single Mot- 0" 
@@ -41,7 +41,23 @@ Bikemapscoll <- read_csv("Bikemaps(collision).csv")
 #Removing the commas after the bikemaps collions section
 incident <- Bikemapscoll$incident_with
 incident<-gsub(",.*","",incident)
-incident
+Bikemapscoll$incident_with <-  incident
+
+
+### Starting the NLP ### 
+
+details <- Bikemapscoll$details
+#Seeing what gives the problems 
+num <- grep("Within", details)
+prob <- details[num]
+#getting rid of 
+Encoding(details) <- "latin1"
+iconv(details, "latin1", "ASCII", sub="")
+
+details <- tolower(details) #make it lower case
+details
+
+
 
 
 
