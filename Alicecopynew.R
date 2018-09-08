@@ -34,13 +34,36 @@ x <- as.character(x)
 injdata$Collision.Date <- as.Date(injdata$Collision.Date, format = '%d/%m/%Y')
 injdata$Collision.Date
 
+injdata$Modes <- droplevels.factor(injdata$Modes, exclude = c("Mot-Ped", "Ped-Unk", "Single Mot", "Single Mot", "Single Ped", "Single Veh", "Veh-Mot", "Veh-Ped", "Veh-Veh"))
+injdata <- na.omit(injdata)
 
 
+## Tabulate
+tab <- table(cut(injdata$Collision.Date, 'month'))
+
+## Format
+TSinjuries <-data.frame(Date=format(as.Date(names(tab)), '%m/%Y'),
+           Frequency=as.vector(tab))
+
+library(TSA)
+
+names(TSinjuries)
+time = TSinjuries$Date
+
+frequency = TSinjuries$Frequency
+
+plot(frequency, type='l', xaxt = 'n', main = "Time Series of Injuries")
+axis(1, at=c(12, 24, 36, 48, 60, 72, 84, 96, 108, 120), 
+     labels = c("2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")
+     )
+
+
+
+
+
+### Section still needs to be fixed: 
 #adding a character split for single variables
 x[x == "Single Cyl"  ] <- "Single Cyl- 0" 
-x[x == "Single Veh"  ] <- "Single Veh- 0" 
-x[x == "Single Mot"  ] <- "Single Mot- 0" 
-x[x == "Single Veh"  ] <- "Single Veh- 0" 
 
 
 #Spliting the list from the modes 
