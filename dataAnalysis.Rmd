@@ -1,0 +1,20 @@
+---
+title: "Vanquish"
+author: "Zhi Yuh Ou Yang (301322064)"
+date: "9/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#trying to read file
+bike.collision <- read.csv("Bikemaps(collision).csv")
+bike.collision
+
+bikemap <- read.csv("Bikemaps.csv")
+bikemap
+```
+
