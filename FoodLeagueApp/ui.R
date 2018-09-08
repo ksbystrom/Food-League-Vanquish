@@ -37,7 +37,7 @@ navbarPage("Food League", id="nav",
                     ),
              column(3,
                     selectInput("sex", "Sex", 
-                                c("All sexes"="", structure(unique(bikemaps$sex),names = c("F", "M", "Other"))), multiple=TRUE)
+                                c("All sexes"="", structure(unique(bikemaps$sex),names = c("M", "F", "Other"))), multiple=TRUE)
                     )
            ),
            fluidRow(

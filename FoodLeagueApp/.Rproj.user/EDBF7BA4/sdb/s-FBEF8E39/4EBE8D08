@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(dplyr)\n\nbikemaps <- read.csv(\"data/Bikemaps(collision).csv\")\n\ncleantable <- bikemaps %>%\n  select(\n    Type = i_type,\n    With = incident_with,\n    Date = date,\n    Details = details,\n    Riding = riding_on,\n    Terrain = terrain,\n    Direction = direction,    \n    Turning = turning,\n    Age = age,\n    Sex = sex,\n    Longitude = longitude,\n    Latitude = latitude,\n    X = X,\n    Y = Y\n  )",
+    "created" : 1536423911620.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3981567053",
+    "id" : "4EBE8D08",
+    "lastKnownWriteTime" : 1536436959,
+    "last_content_update" : 1536436959353,
+    "path" : "~/Food-League-Vanquish/FoodLeagueApp/global.R",
+    "project_path" : "global.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

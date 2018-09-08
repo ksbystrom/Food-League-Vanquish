@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(leaflet)\nlibrary(RColorBrewer)\nlibrary(scales)\nlibrary(lattice)\nlibrary(dplyr)\nlibrary(shiny)\n\n\nfunction(input, output, session) {\n  \n  # Create the map\n  output$map <- renderLeaflet({\n    leaflet() %>%\n      addTiles(\n        urlTemplate = \"//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png\",\n        attribution = 'Maps by <a href=\"http://www.mapbox.com/\">Mapbox</a>'\n      ) %>%\n      setView(lng = -93.85, lat = 37.45, zoom = 4)\n  })\n  \n  #Create first vis in Menu\n  output$hist1 <- renderPlot({\n    hist(rnorm(1000000),\n         breaks = 50,\n         main = \"Normal Distribution Histogram\",\n         xlab = \"Value\",\n         ylab = \"Frequency\",\n         col = '#00DD00',\n         border = 'white')\n    })\n  output$hist2 <- renderPlot({ \n    hist(runif(1000000),\n         breaks = 50,\n         main = \"Uniform Distribution Histogram\",\n         xlab = \"Value\",\n         ylab = \"Frequency\",\n         col = '#00DD00',\n         border = 'white')\n    })\n  \n  output$biketable <- DT::renderDataTable({\n    df <- filter(cleantable,\n          Age >= input$minYear,\n          Age <= input$maxYear,\n          is.null(input$terrain) | Terrain %in% input$terrain,\n          is.null(input$sex) | Sex %in% input$sex\n       ) \n    #   mutate(Action = paste('<a class=\"go-map\" href=\"\" data-lat=\"', Latitude, '\" data-long=\"', Longitude, '\"><i class=\"fa fa-crosshairs\"></i></a>', sep=\"\"))\n    #action <- DT::dataTableAjax(session, df)\n    \n    DT::datatable(df, escape = FALSE)\n  })\n  \n  \n  \n}",
+    "created" : 1536423909666.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1807451787",
+    "id" : "CC3281F8",
+    "lastKnownWriteTime" : 1536443263,
+    "last_content_update" : 1536443263171,
+    "path" : "~/Food-League-Vanquish/FoodLeagueApp/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
