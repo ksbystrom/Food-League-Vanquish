@@ -12,9 +12,28 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 #trying to read file
 bike.collision <- read.csv("Bikemaps(collision).csv")
-bike.collision
+injury <- read.csv("injuryData(2008-17).csv")
+trafficCountBikes <- read.csv("TrafficCountbikes.csv")
+trafficCountPedes <- read.csv("TrafficCountPedes.csv")
+```
 
-bikemap <- read.csv("Bikemaps.csv")
-bikemap
+```{r}
+#dealing with date
+bike.collision$newdate <- as.character(bike.collision$date)
+bike.collision$newdate <- strsplit(bike.collision$newdate, split = "T")
+
+bike.collision$dateToUse = lapply(X = bike.collision$newdate, function(x) x[1])
+bike.collision$timeToUse = lapply(X = bike.collision$newdate, function(x) x[2])
+
+bike.collision$dateToUse <- lapply(bike.collision$dateToUse, function(x) format(as.Date(x, format ='%Y-%m-%d'), '%Y-%m-%d'))
+
+injury$Collision.Date <- as.Date(injury$Collision.Date, format = '%d/%m/%Y')
+```
+
+```{r}
+#matching the data in btw bike collision and injury data
+wdb <- dbConnect(RSQLite::SQLite(), "wdb.sqlite")
+dbWriteTable(wdb,name='BikeCollision', value = bike.collision, overwrite=TRUE) 
+dbWriteTable(wdb,name='injury', value = injury, overwrite=TRUE)
 ```
 
