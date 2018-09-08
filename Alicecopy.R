@@ -10,6 +10,7 @@ injdata = read.csv("injuryData(2008-17).csv", header = TRUE)
 injdata
 #looking at the what was involved for the accidents
 x <- injdata$Modes 
+#changing to characters 
 x <- as.character(x)
 
 
@@ -20,11 +21,21 @@ x[x == "Single Mot"  ] <- "Single Mot- 0"
 x[x == "Single Veh"  ] <- "Single Veh- 0" 
 
 
-
 #Spliting the list from the modes 
 listHolder <- strsplit(as.character(x), "-")
 listHolder<- as.character(listHolder)
 
+#splitting the variable vector into two seperate vectors
+dd  <-  as.data.frame(matrix(unlist(listHolder),2)) 
 
-dd  <-  as.data.frame(matrix(unlist(listHolder), 2))
+library(readr)
+Bikemaps_collision_ <- read_csv("Bikemaps(collision).csv")
+
+
+
+
+
+
+
+
 
