@@ -237,7 +237,7 @@ clusteringFUN= function(newdataframe)
   hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete") 
   
   #cutree cuts a tree into several groups either by specifying the desired number(s) of groups
-  cluscutree <- cutree(hc, k = 10)
+  cluscutree <- cutree(hc, k = 6)
   
   ## Compare the 2 and 4 grouping:
   g24 <- cutree(hc, k = c(2,4))
