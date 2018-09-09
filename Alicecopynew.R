@@ -11,23 +11,72 @@ library(quanteda)
 library(corpus)
 library(tm)
 library(qdap)
+library(dplyr)
+library(wordcloud)
+library(plotrix)
+library(dendextend)
+library(ggplot2)
+library(ggthemes)
+library(RWeka)
+
+
+
 ############################# INJURY DATA ############################
 
 
 injdata = read.csv("injuryData(2008-17).csv", header = TRUE)
 #Viewing data 
 injdata
-#looking at the what was involved for the accidents
+#looking at the what was involved for the accidentss
 x <- injdata$Modes 
 #changing to characters 
 x <- as.character(x)
+injdata$Collision.Date <- as.Date(injdata$Collision.Date, format = '%d/%m/%Y')
+injdata$Collision.Date
+
+injdata$Modes <- droplevels.factor(injdata$Modes, exclude = c("Mot-Ped", "Ped-Unk", "Single Mot", "Single Mot", "Single Ped", "Single Veh", "Veh-Mot", "Veh-Ped", "Veh-Veh"))
+injdata <- na.omit(injdata)
 
 
+Severeinjdata <-injdata[which(injdata$Injury.Type == "Severe"),]
+Minorinjdata <-injdata[which(injdata$Injury.Type == "Minor"),]
+
+## Tabulate
+Stab <- table(cut(Severeinjdata$Collision.Date, 'month'))
+Mtab <- table(cut(Minorinjdata$Collision.Date, 'month'))
+
+## Format
+Severeinjuries <-data.frame(Date=format(as.Date(names(Stab)), '%m/%Y'),
+                           Frequency=as.vector(Stab))
+Minorinjuries <-data.frame(Date=format(as.Date(names(Mtab)), '%m/%Y'),
+           Frequency=as.vector(Mtab))
+
+
+names(Severeinjuries)
+Severetime = Severeinjuries$Date
+Severefrequency = Severeinjuries$Frequency
+
+Minortime = Minorinjuries$Date
+Minorfrequency = Minorinjuries$Frequency
+
+
+
+
+
+plot(Minorfrequency, type='l', xaxt = 'n', main = "Time Series of Injuries from Cyclists",col="blue", lwd=3,  xlab="Time", ylab="Frequency")
+lines(Severefrequency, col="green",lwd=3)
+axis(1, at=c(12, 24, 36, 48, 60, 72, 84, 96, 108, 120),
+     labels = c("2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")
+     )
+legend(x = 0.005, y = 46, legend = c("Minor Injuries", "Severe Injuries"),lty=1,col=c("blue","green"), bty="n",cex=1.2,lwd=3)
+
+
+
+
+
+### Section still needs to be fixed: 
 #adding a character split for single variables
 x[x == "Single Cyl"  ] <- "Single Cyl- 0" 
-x[x == "Single Veh"  ] <- "Single Veh- 0" 
-x[x == "Single Mot"  ] <- "Single Mot- 0" 
-x[x == "Single Veh"  ] <- "Single Veh- 0" 
 
 
 #Spliting the list from the modes 
@@ -37,84 +86,226 @@ listHolder<- as.character(listHolder)
 #splitting the variable vector into two seperate vectors
 dd  <-  as.data.frame(matrix(unlist(listHolder),2)) 
 
+#####################################################################
 
 
-############################# COLLISIONS DATA ############################
+
+
+
+
+
+
+
+
+##################### FUNCTIONS FOR BIKE MAP ##################################
+
+
+## Creating a function to clean the data
+## return dataframe with cleaned data
+#involved are the types of transportation involved (vehicles, bikes, pedestrians etc.)
+datacleanFun = function(date,details,age,sex,involved)
+{
+  ##### date #####
+  #dealing with date, check ZhiYuhCode when you have time
+  
+  ##### details #####
+  
+  
+  #Getting rid of all non ascii symbols
+  Encoding(details) <- "latin1"
+  details <- iconv(details, "latin1", "ASCII", sub="")
+  
+  # All lowercase, removing punctation and numbers
+  details <- tolower(details)
+  details <- removePunctuation(details)
+  details <- removeNumbers(details)
+  
+  # Remove stop words from details
+  details <-removeWords(details, stopwords('en'))
+
+  
+  ##### sex ##### 
+  Encoding(sex) <- "latin1"
+  sex<-iconv(sex, "latin1", "ASCII", sub="")
+  
+  
+  ##### involved #####
+  
+  #Removing the commas after the bikemaps collions section
+  involved<-gsub(",.*","",involved)
+  
+  #getting rid of non ascii symbols in involved 
+  Encoding(involved) <- "latin1"
+  involved<-iconv(involved, "latin1", "ASCII", sub="")
+  
+  
+  ### creating new data frame ### 
+  newdataframe <- data.frame(date,details,age,sex,involved)
+  
+  return(newdataframe)
+}
+
+
+
+
+FrequencyPlotFUN= function(newdataframe){
+  # now I wish to create my bag of words
+  detailsFre <- Corpus(VectorSource(newdataframe$details))
+  stopwords_regex = paste(stopwords('en'), collapse = '\\b|\\b')
+  stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
+  detailsFre = stringr::str_replace_all(details, stopwords_regex, '')
+  detailsFre
+  
+  #Finding the most frequent terms and plotting it. 
+  frequent_terms <- freq_terms(details, 10)
+  plot <- plot(frequent_terms)
+  return(frequent_terms)
+  
+}
+
+
+## Creating a function to make a word cloud of the cleaned data(see function above)
+wordcloudFUN = function(newdataframe){
+ 
+  detailsC <- Corpus(VectorSource(newdataframe$details))
+  inspect(detailsC)
+  
+  dtm <- TermDocumentMatrix(detailsC)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m),decreasing=TRUE)
+  d <- data.frame(word = names(v),freq=v)
+  head(d, 10)
+  
+  # Creating word cloud 
+  set.seed(1234)
+  wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+            max.words=200, random.order=FALSE, rot.per=0.35, 
+            colors=brewer.pal(8, "Dark2"))
+  
+  newdataframe$details <-  detailsC
+  return(newdataframe)
+  
+}
+clusteringFUN= function(newdataframe)
+{
+  
+  
+  details<- BMColCleanData$details
+  
+  ## creating clustering function 
+  details_source <- VectorSource(details)
+  
+  # Make a volatile corpus: details_corpus
+  details_corpus <- VCorpus(details_source)
+  
+  # Print out details_corpus
+  details_corpus
+  
+  # Print the content of the 15th tweet in details_corpus
+  details_corpus[[15]]$content
+  
+  clean_corp <- clean_corpus(details_corpus)
+  clean_corp[[20]][1]
+  
+  
+  
+  # Create the dtm from the corpus: details_dtm
+  clean_corp
+  
+  details_dtm <- DocumentTermMatrix(clean_corp)
+  
+  # Print out coffee_dtm data
+  details_dtm
+  
+  
+  # Convert coffee_dtm to a matrix: coffee_m
+  details_m <- as.matrix(details_dtm)
+  
+  # Print the dimensions of coffee_m
+  dim(details_m)
+  
+  # Review a portion of the matrix
+  details_m[14:16, 100:105]
+  
+  
+  # Create a TDM from clean_corp: coffee_tdm
+  details_tdm <- TermDocumentMatrix(clean_corp)
+  
+  
+  details_tdm2 <- removeSparseTerms(details_tdm, sparse = 0.975)
+  
+  hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete") 
+  
+  #cutree cuts a tree into several groups either by specifying the desired number(s) of groups
+  cluscutree <- cutree(hc, k = 6)
+  
+  ## Compare the 2 and 4 grouping:
+  g24 <- cutree(hc, k = c(2,4))
+  table(grp2 = g24[,"2"], grp4 = g24[,"4"])
+  # Plot a dendrogram
+  plot(hc)
+  return (cluscutree)
+  
+  
+}
+
+############################################################################
+
+
+
+
+############################# BIKEMAP DATA #################################
+
+##### COLLISIONS DATA 
+
 #Reading in the collisions data 
-
 Bikemapscoll <- read_csv("Bikemaps(collision).csv")
 
-#Removing the commas after the bikemaps collions section
-incident <- Bikemapscoll$incident_with
-incident<-gsub(",.*","",incident)
-Bikemapscoll$incident_with <-  incident
+# Using functions 
+BMColCleanData<- datacleanFun(Bikemapscoll$date ,Bikemapscoll$details, Bikemapscoll$age, Bikemapscoll$sex,Bikemapscoll$incident_with)
+head(BMColCleanData,4)
 
-
-### Starting the NLP for collisions ### 
-
-details <- Bikemapscoll$details
-#Seeing what gives the problems 
-num <- grep("Within", details)
-prob <- details[num]
-#getting rid of non ascii symbols
-Encoding(details) <- "latin1"
-iconv(details, "latin1", "ASCII", sub="")
-
-
-#make it lower case
-details <- tolower(details) 
-
-#getting rid of the punctation 
-details <- gsub('[[:punct:]]', '', details)
-
-
-# now I wish to create my bag of words
-details <- Corpus(VectorSource(details))
-stopwords_regex = paste(stopwords('en'), collapse = '\\b|\\b')
-stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
-details = stringr::str_replace_all(details, stopwords_regex, '')
-details
-
-#Finding the most frequent terms and plotting it. 
-frequent_terms <- freq_terms(details, 10)
-plot(frequent_terms)
+FrequencyPlotFUN(BMColCleanData)
+wordcloudFUN(BMColCleanData)
+clusteringFUN(BMColCleanData)
 
 
 
 
-############################# HAZARDS DATA ############################
+###### NEARMISS DATA
+BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
+BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
+FrequencyPlotFUN(BMnearmissCleanData)
+wordcloudFUN(BMnearmissCleanData)
+clusteringFUN(BMnearmissCleanData)
+
+
+
+
+####### HAZARDS DATA
+
 #Reading in the hazards data 
-
-### Starting the NLP for hazards  ### 
 
 Bikemapshazards<- read_csv("Bikemaps(hazards).csv")
 
-detailsHaz<-  Bikemapshazards$details
-#getting rid of non ascii symbols
-Encoding(detailsHaz) <- "latin1"
-iconv(detailsHaz, "latin1", "ASCII", sub="")
-
-
-#make it lower cases
-detailsHaz <- tolower(detailsHaz) 
-
-#getting rid of the punctation 
-detailsHaz <- gsub('[[:punct:]]', '', detailsHaz)
-
-
-# now I wish to create my bag of words
-detailsHaz <- Corpus(VectorSource(detailsHaz))
-stopwords_regex = paste(stopwords('en'), collapse = '\\b|\\b')
-stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
-detailsHaz = stringr::str_replace_all(detailsHaz, stopwords_regex, '')
-detailsHaz
-
-#Finding the most frequent terms and plotting it. 
-frequent_terms <- freq_terms(detailsHaz, 10)
-plot(frequent_terms)
+# Using functions 
+BMHazCleanData<- datacleanFun(Bikemapshazards$date ,Bikemapshazards$details, Bikemapshazards$age, Bikemapshazards$sex,Bikemapshazards$i_type)
+head(BMHazCleanData,4)
+FrequencyPlotFUN(BMHazCleanData)
+wordcloudFUN(BMHazCleanData)
+clusteringFUN(BMHazCleanData)
 
 
 
+ ############################################################################
 
+ 
+##### Fatalitites  ####### 
+ 
+fatalities <- read_csv("fatalities.csv")
+
+
+#new dataframe with fatalitites soley from bikes 
+newfatalities<- fatalities[complete.cases(fatalities$Bike), ]
 
 
