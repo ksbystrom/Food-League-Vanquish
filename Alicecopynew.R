@@ -190,12 +190,12 @@ clusteringFUN= function(newdataframe)
   # Print out 
   details_dtm
   
-  ##get the top20######
-  toptwenty<-findFreqTerms(details_dtm , lowfreq = 5)
+  ##get the top words
+  topwords<-findFreqTerms(details_dtm , lowfreq = 5)
   
-  # Convert coffee_dtm to a matrix: coffee_m
+  
   details_m <- as.matrix(details_dtm)
-  newdata<- details_m[,toptwenty]
+  newdata<- details_m[,topwords]
   lmao<-data.frame(newdata )
   
 
@@ -220,7 +220,7 @@ clusteringFUN= function(newdataframe)
 wordcloudFUN = function(newdataframe,clustercolumn,clusternumber){
   
  
-  clusdf <-newdataframe[which(newdataframe$clusnumscoll == clusternumber),]
+  clusdf <-newdataframe[which(newdataframe$ID == clusternumber),]
   clusdf$details
   vs<-VectorSource(clusdf$details)
   detailsC <- Corpus(vs)
@@ -268,44 +268,59 @@ head(BMColCleanData,4)
 
 FrequencyPlotFUN(BMColCleanData)
 clusnumscoll <-clusteringFUN(BMColCleanData)
-BMColCleanData$clusnumscoll<- clusnumscoll
-BMColCleanData
+colnames(clusnumscoll) <- c( "ID")
+str(clusnumscoll)
+str(BMColCleanData)
+#BMColCleanData$clusnumscoll<- clusnumscoll
+CleanClustData <- cbind(BMColCleanData, clusnumscoll)
+str(CleanClustData)
+
+#clustering function and wordcloud fun
+
+write.csv(CleanClustData, file = "MyData.csv")
 
 
 #######
-wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,1)
-wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,2)
-wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,4)
+wordcloudFUN(CleanClustData,CleanClustData$ID,1)
+wordcloudFUN(CleanClustData,CleanClustData$ID,2)
+wordcloudFUN(CleanClustData,CleanClustData$ID,4)
 
 #### Summary Statistics 
 #cluster 1
 summary1 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "1",] 
 stat1Sex <- data.frame(table(summary1$sex))
 stat1Sex$proportion <- (stat1Sex$Freq/nrow(summary1))
+stat1Sex
 
 stat1Involved <- data.frame(table(summary1$involved))
 stat1Involved$proportion <- data.frame(stat1Involved$Freq/nrow(summary1))
+stat1Involved
+
 
 stat1Age <- data.frame(table(summary1$age))
 stat1Age$Var1 <- as.numeric(levels(stat1Age$Var1))[stat1Age$Var1]
 stat1Age$proportion <- (stat1Age$Freq/nrow(summary1))
+stat1Age
 2018 - summary(stat1Age$Var1)["Mean"] #showing the mean age
 
 #cluster 2
 summary2 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "2",] 
 stat2Sex <- data.frame(table(summary2$sex))
 stat2Sex$proportion <- (stat2Sex$Freq/nrow(summary2))
-
+stat2Sex
 stat2Involved <- data.frame(table(summary2$involved))
 stat2Involved$proportion <- data.frame(stat2Involved$Freq/nrow(summary2))
-
+stat2Involved
 stat2Age <- data.frame(table(summary2$age))
-stat2Age$Var2 <- as.numeric(levels(stat2Age$Var2))[stat2Age$Var2]
+stat2Age$Var1 <- as.numeric(levels(stat2Age$Var1))[stat2Age$Var1]
 stat2Age$proportion <- (stat2Age$Freq/nrow(summary2))
-2018 - summary(stat2Age$Var2)["Mean"] #showing the mean age
+stat2Age
+2018 - summary(stat2Age$Var1)["Mean"] #showing the mean age
+
+
 
 #cluster 4
-summary4 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "4",] 
+summary4 <- CleanClustData[CleanClustData$ID == "4",] 
 stat4Sex <- data.frame(table(summary4$sex))
 stat4Sex$proportion <- (stat4Sex$Freq/nrow(summary4))
 
@@ -329,7 +344,7 @@ BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
 BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
 FrequencyPlotFUN(BMnearmissCleanData)
 wordcloudFUN(BMnearmissCleanData)
-clusteringFUN(BMnearmissCleanData)\
+clusteringFUN(BMnearmissCleanData)
 
 
 
@@ -337,7 +352,7 @@ clusteringFUN(BMnearmissCleanData)\
 
 
 
-####### HAZARDS DATA 
+####### HAZARDS DATA####### 
 
 #Reading in the hazards data 
 
