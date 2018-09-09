@@ -38,7 +38,7 @@ injdata$Collision.Date
 injdata$Modes <- droplevels.factor(injdata$Modes, exclude = c("Mot-Ped", "Ped-Unk", "Single Mot", "Single Mot", "Single Ped", "Single Veh", "Veh-Mot", "Veh-Ped", "Veh-Veh"))
 injdata <- na.omit(injdata)
 
-
+#creating two variables for plot
 Severeinjdata <-injdata[which(injdata$Injury.Type == "Severe"),]
 Minorinjdata <-injdata[which(injdata$Injury.Type == "Minor"),]
 
@@ -52,7 +52,7 @@ Severeinjuries <-data.frame(Date=format(as.Date(names(Stab)), '%m/%Y'),
 Minorinjuries <-data.frame(Date=format(as.Date(names(Mtab)), '%m/%Y'),
            Frequency=as.vector(Mtab))
 
-
+#creating time and frequency for minor and servere incidents
 names(Severeinjuries)
 Severetime = Severeinjuries$Date
 Severefrequency = Severeinjuries$Frequency
@@ -62,7 +62,7 @@ Minorfrequency = Minorinjuries$Frequency
 
 
 
-
+# plotting the lines for minor and servere incidents
 
 plot(Minorfrequency, type='l', xaxt = 'n', main = "Time Series of Injuries from Cyclists",col="blue", lwd=3,  xlab="Time", ylab="Frequency")
 lines(Severefrequency, col="green",lwd=3)
@@ -75,7 +75,7 @@ legend(x = 0.005, y = 46, legend = c("Minor Injuries", "Severe Injuries"),lty=1,
 
 
 
-### Section still needs to be fixed: 
+####### Section can be done if we have extra time #########
 #adding a character split for single variables
 x[x == "Single Cyl"  ] <- "Single Cyl- 0" 
 
@@ -107,7 +107,7 @@ dd  <-  as.data.frame(matrix(unlist(listHolder),2))
 datacleanFun = function(date,details,age,sex,involved)
 {
   ##### date #####
-  #dealing with date, check ZhiYuhCode when you have time
+  #dealing with date, check ZhiYuhCode if you have time
   
   ##### details #####
   
@@ -147,19 +147,21 @@ datacleanFun = function(date,details,age,sex,involved)
 }
 
 
-
+### Creating a function that will plot the most fequent words in the dataframe
 
 FrequencyPlotFUN= function(newdataframe){
   # now I wish to create my bag of words
   detailsFre <- Corpus(VectorSource(newdataframe$details))
+  #removing the stop words
   stopwords_regex = paste(stopwords('en'), collapse = '\\b|\\b')
   stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
   detailsFre = stringr::str_replace_all(details, stopwords_regex, '')
+  #viewing 
   detailsFre
   
   #Finding the most frequent terms and plotting it. 
   frequent_terms <- freq_terms(details, 10)
-  plot <- plot(frequent_terms)
+  plot <- plot(frequent_terms,col=47)
   return(frequent_terms)
   
 }
@@ -241,6 +243,13 @@ wordcloudFUN = function(newdataframe,clustercolumn,clusternumber){
   
 }
 
+
+
+  
+  
+  
+
+
 ############################################################################
 
 
@@ -260,21 +269,75 @@ head(BMColCleanData,4)
 FrequencyPlotFUN(BMColCleanData)
 clusnumscoll <-clusteringFUN(BMColCleanData)
 BMColCleanData$clusnumscoll<- clusnumscoll
+BMColCleanData
+
+
+#######
 wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,1)
 wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,2)
 wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,4)
 
-###### NEARMISS DATA
+#### Summary Statistics 
+#cluster 1
+summary1 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "1",] 
+stat1Sex <- data.frame(table(summary1$sex))
+stat1Sex$proportion <- (stat1Sex$Freq/nrow(summary1))
+
+stat1Involved <- data.frame(table(summary1$involved))
+stat1Involved$proportion <- data.frame(stat1Involved$Freq/nrow(summary1))
+
+stat1Age <- data.frame(table(summary1$age))
+stat1Age$Var1 <- as.numeric(levels(stat1Age$Var1))[stat1Age$Var1]
+stat1Age$proportion <- (stat1Age$Freq/nrow(summary1))
+2018 - summary(stat1Age$Var1)["Mean"] #showing the mean age
+
+#cluster 2
+summary2 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "2",] 
+stat2Sex <- data.frame(table(summary2$sex))
+stat2Sex$proportion <- (stat2Sex$Freq/nrow(summary2))
+
+stat2Involved <- data.frame(table(summary2$involved))
+stat2Involved$proportion <- data.frame(stat2Involved$Freq/nrow(summary2))
+
+stat2Age <- data.frame(table(summary2$age))
+stat2Age$Var2 <- as.numeric(levels(stat2Age$Var2))[stat2Age$Var2]
+stat2Age$proportion <- (stat2Age$Freq/nrow(summary2))
+2018 - summary(stat2Age$Var2)["Mean"] #showing the mean age
+
+#cluster 4
+summary4 <- BMColCleanData[clusnumscoll$cutree.hc..k. == "4",] 
+stat4Sex <- data.frame(table(summary4$sex))
+stat4Sex$proportion <- (stat4Sex$Freq/nrow(summary4))
+
+stat4Involved <- data.frame(table(summary4$involved))
+stat4Involved$proportion <- data.frame(stat4Involved$Freq/nrow(summary4))
+
+stat4Age <- data.frame(table(summary4$age))
+stat4Age$Var1 <- as.numeric(levels(stat4Age$Var1))[stat4Age$Var1]
+stat4Age$proportion <- (stat4Age$Freq/nrow(summary4))
+2018 - summary(stat4Age$Var1)["Mean"] #showing the mean age
+
+
+
+
+
+
+
+
+###### NEARMISS DATA$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
 BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
 FrequencyPlotFUN(BMnearmissCleanData)
 wordcloudFUN(BMnearmissCleanData)
-clusteringFUN(BMnearmissCleanData)
+clusteringFUN(BMnearmissCleanData)\
 
 
 
 
-####### HAZARDS DATA
+
+
+
+####### HAZARDS DATA 
 
 #Reading in the hazards data 
 
@@ -289,7 +352,7 @@ clusteringFUN(BMHazCleanData)
 
 
 
- ############################################################################
+############################################################################
 
  
 ##### Fatalitites  ####### 
