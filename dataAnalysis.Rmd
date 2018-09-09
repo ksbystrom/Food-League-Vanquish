@@ -1,0 +1,106 @@
+---
+title: "Vanquish"
+author: "Zhi Yuh Ou Yang (301322064)"
+date: "9/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#trying to read file
+bike.collision <- read.csv("Bikemaps(collision).csv")
+bike.collision
+
+bike.collision$dateToUse <- lapply(bike.collision$dateToUse, function(x) format(as.Date(x, format ='%Y-%m-%d'), '%Y-%m-%d')) #if we didnt put the second part in the function, then R will calculate the date since the origin which is from 1970.
+
+injury$Collision.Date <- as.Date(injury$Collision.Date, format = '%d/%m/%Y')
+```
+
+```{r}
+#check there is a library to chekc the distance in between those two different sources, the lad and long (by matrix).
+#then just take those with different within 100 meters.
+#then compare with date.
+
+#combining the long and lat into a variable.
+bike.collision$coordinateA <- with(bike.collision, paste(longitude, latitude, sep = ","))
+bike.collision$coordinateA <- strsplit(bike.collision$coordinateA, split = ",")
+
+injury$coordinateB <- with(injury, paste(Longitude, Latitude, sep = ","))
+injury$coordinateB <- strsplit(injury$coordinateB, split = ",")
+injury$Modes <- droplevels.factor(injury$Modes, exclude = c("Mot-Ped", "Ped-Unk", "Single Mot", "Single Mot", "Single Ped", "Single Veh", "Veh-Mot", "Veh-Ped", "Veh-Veh"))
+injury <- na.omit(injury)
+
+nrow(bike.collision)
+nrow(injury)
+matrixCoordinate <- matrix(nrow = nrow(bike.collision), ncol = nrow(injury))
+for (i in 1:nrow(bike.collision)){
+  for (j in 1:nrow(injury)){
+    print(paste("i is", i, "j is", j))
+    matrixCoordinate[i,j] <- distm(c(bike.collision$longitude[i], bike.collision$latitude[i]), c(injury$Longitude[j], injury$Latitude[j]), fun = distHaversine)
+  }
+}
+
+a <- data.frame(which( matrixCoordinate <= 500, arr.ind=T))
+names(a)[1] <- "bike.collisionID"
+names(a)[2] <- "injuryID"
+rownames(injury) <- NULL
+a$bikeCollisionDate <- bike.collision[a$bike.collisionID, 16]
+a$injuryDate <- injury[a$injuryID, 3]
+a$bikeCollisionDate <- unlist(a$bikeCollisionDate)
+a$bikeCollisionDate <- as.Date(a$bikeCollisionDate, format = '%Y-%m-%d')
+a$accuracy <- (a$bikeCollisionDate == a$injuryDate)
+```
+
+```{r}
+table(injury$Modes)
+injury$Modes <- droplevels.factor(injury$Modes, exclude = "")
+injury <- na.omit(injury)
+injuryData <- data.frame(table(injury$Modes))
+injuryData$proportion <- (injuryData$Freq/nrow(injury))
+```
+
+```{r}
+install.packages("MASS")
+library(MASS)
+injury$Gender <- droplevels.factor(injury$Gender, exclude = "")
+DA <- table(injury$Injury.Type, injury$Gender)
+DA
+chisq.test(DA) 
+
+injuryNMot <- injury
+injuryNMot$Modes <- droplevels.factor(injuryNMot$Modes, exclude = "Mot-Cyl") 
+injuryNMot <- na.omit(injuryNMot)
+DA1 <- table(injuryNMot$Injury.Type, injuryNMot$Modes)
+DA1
+chisq.test(DA1)
+
+
+injuryGender <- injuryNMot
+injuryGender$Age <- droplevels.factor(injuryGender$Age, exclude = "")
+injuryGender <- na.omit(injuryGender)
+DA2 <- table(injuryGender$Injury.Type, injuryGender$Age)
+DA2
+chisq.test(DA2)
+
+install.packages("corrplot")
+library(corrplot)
+DA2m <- cor(data.frame(injuryGender$Injury.Type, injuryGender$Age))
+corrplot(DA2m, method = "color")
+
+install.packages("ca")
+library(ca) 
+plot(ca(DA2))
+
+install.packages("vcd")
+library(vcd)
+mosaic(DA2, shade=TRUE, legend=TRUE)
+
+install.packages("mosaic")
+mosaicplot(DA2, color = c("cadetblue1", "darkgrey"), xlab = "Injury Type", ylab = "Age Group", shade = TRUE)
+mosaicplot(DA2, color = TRUE, shade = TRUE, xlab = "Injury Type", ylab = "Age Group")
+mosaic(DA2, shade = TRUE, legend = TRUE)
+```
+
