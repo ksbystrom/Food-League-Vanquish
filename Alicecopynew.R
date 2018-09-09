@@ -165,28 +165,6 @@ FrequencyPlotFUN= function(newdataframe){
 }
 
 
-## Creating a function to make a word cloud of the cleaned data(see function above)
-wordcloudFUN = function(newdataframe){
- 
-  detailsC <- Corpus(VectorSource(newdataframe$details))
-  inspect(detailsC)
-  
-  dtm <- TermDocumentMatrix(detailsC)
-  m <- as.matrix(dtm)
-  v <- sort(rowSums(m),decreasing=TRUE)
-  d <- data.frame(word = names(v),freq=v)
-  head(d, 10)
-  
-  # Creating word cloud 
-  set.seed(1234)
-  wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-            max.words=200, random.order=FALSE, rot.per=0.35, 
-            colors=brewer.pal(8, "Dark2"))
-  
-  newdataframe$details <-  detailsC
-  return(newdataframe)
-  
-}
 clusteringFUN= function(newdataframe)
 {
   
@@ -211,37 +189,55 @@ clusteringFUN= function(newdataframe)
   details_dtm
   
   ##get the top20######
-  toptwenty<-findFreqTerms(details_dtm , 20)
+  toptwenty<-findFreqTerms(details_dtm , lowfreq = 5)
   
   # Convert coffee_dtm to a matrix: coffee_m
   details_m <- as.matrix(details_dtm)
   newdata<- details_m[,toptwenty]
   lmao<-data.frame(newdata )
   
- 
-  # Print the dimensions of coffee_m
-  dim(lmao)
-  
-  # Review a portion of the matrix
-  details_m[14:16, 100:105]
-  
-  
-  # Create a TDM from clean_corp: coffee_tdm
-  details_tdm <- TermDocumentMatrix(clean_corp)
-  details_tdm2 <- removeSparseTerms(details_tdm, sparse = 0.975)
-  
-  hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete")
-  DF <- data.frame(as.matrix(details_tdm2), stringsAsFactors=FALSE)
-  label_back <-t(data.frame(DF,cutree(hc,k=9)))
+
+  k=5
+  hc <- hclust(d = dist(lmao, method = "euclidean"), method = "complete")
+  DF <- data.frame(as.matrix(lmao), stringsAsFactors=FALSE)
+  label_back <-t(data.frame(DF,cutree(hc,k)))
   row.names(label_back) <- NULL
   
-  cluscutree <- cutree(hc, k = 9)
-  dataFrame <- data.frame(cutree(hc, k = 9))
-  
+  cluscutree <- cutree(hc, k )
+  clusnums <- data.frame(cutree(hc, k))
+  table(clusnums )
   # Plot a dendrogram
   plot(hc)
-  return (dataFrame)
+  return (clusnums )
   
+  
+}
+
+
+## Creating a function to make a word cloud of the cleaned data(see function above)
+wordcloudFUN = function(newdataframe,clustercolumn,clusternumber){
+  
+ 
+  clusdf <-newdataframe[which(newdataframe$clusnumscoll == clusternumber),]
+  clusdf$details
+  vs<-VectorSource(clusdf$details)
+  detailsC <- Corpus(vs)
+  inspect(detailsC)
+  
+  dtm <- TermDocumentMatrix(detailsC)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m),decreasing=TRUE)
+  d <- data.frame(word = names(v),freq=v)
+  head(d, 10)
+  
+  # Creating word cloud 
+  set.seed(1234)
+  wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+            max.words=200, random.order=FALSE, rot.per=0.35, 
+            colors=brewer.pal(8, "Dark2"))
+  
+  newdataframe$details <-  detailsC
+  return(newdataframe)
   
 }
 
@@ -262,10 +258,13 @@ BMColCleanData<- datacleanFun(Bikemapscoll$date ,Bikemapscoll$details, Bikemapsc
 head(BMColCleanData,4)
 
 FrequencyPlotFUN(BMColCleanData)
-wordcloudFUN(BMColCleanData)
-lol <-clusteringFUN(BMColCleanData)
+clusnumscoll <-clusteringFUN(BMColCleanData)
+BMColCleanData$clusnumscoll<- clusnumscoll
+wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,1)
+wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,2)
+wordcloudFUN(BMColCleanData,BMColCleanData$clusnumscoll,4)
 
-t###### NEARMISS DATA
+###### NEARMISS DATA
 BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
 BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
 FrequencyPlotFUN(BMnearmissCleanData)
