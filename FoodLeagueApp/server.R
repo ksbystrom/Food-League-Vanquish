@@ -4,7 +4,7 @@ library(scales)
 library(lattice)
 library(dplyr)
 library(shiny)
-
+library(RColorBrewer)
 
 function(input, output, session) {
   
@@ -52,6 +52,20 @@ function(input, output, session) {
     DT::datatable(df, escape = FALSE)
   })
   
+  # This observer is responsible for maintaining the circles and legend,
+  # according to the variables the user has chosen to map to color and size.
+ observe({
+   colorBy <- input$color
+   colorData <- bikemaps[[colorBy]]
+   pal <- colorBin("Greens", 1:15, pretty = TRUE)
+   leafletProxy("map", data = bikemaps) %>% 
+     clearShapes() %>%
+     addCircles(~longitude, ~latitude, radius=300,
+                stroke=FALSE, fillOpacity=0.4, fillColor=pal(colorData)) %>%
+     addLegend("bottomleft", pal=pal, values=colorData, title=colorBy,
+              layerId="colorLegend")
+  })
+
   
   
 }

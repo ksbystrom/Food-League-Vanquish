@@ -18,7 +18,7 @@ navbarPage("Food League", id="nav",
                     draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
                     width = 290, height = "auto",
                     h2("Bike Collision explorer"),
-                    selectInput("color", "Color Variable", c("Collision Cluster", "Injury Severity"), selected = "Cyclist Sex"),
+                    selectInput("color", "Color Variable", c("Collision Cluster" ="CC", "Incident With" = "incident_with"), selected = "incident_with"),
                     
                     withSpinner(plotOutput("hist1", height = 200)),
                     withSpinner(plotOutput("hist2", height = 250))
