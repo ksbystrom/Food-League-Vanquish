@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 library(leaflet)
 library(RColorBrewer)
 library(scales)
@@ -16,13 +15,13 @@ function(input, output, session) {
         urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
         attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
       ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = 4)
+      setView(lng = -123.0, lat = 49.24, zoom = 11)
   })
   
   #Create first vis in Menu
   output$hist1 <- renderPlot({
-    hist(rnorm(1000000),
-         breaks = 50,
+    hist(rnorm(10000),
+         breaks = 20,
          main = "Normal Distribution Histogram",
          xlab = "Value",
          ylab = "Frequency",
@@ -30,8 +29,8 @@ function(input, output, session) {
          border = 'white')
     })
   output$hist2 <- renderPlot({ 
-    hist(runif(1000000),
-         breaks = 50,
+    hist(runif(10000),
+         breaks = 20,
          main = "Uniform Distribution Histogram",
          xlab = "Value",
          ylab = "Frequency",
@@ -44,7 +43,8 @@ function(input, output, session) {
           Age >= input$minYear,
           Age <= input$maxYear,
           is.null(input$terrain) | Terrain %in% input$terrain,
-          is.null(input$sex) | Sex %in% input$sex
+          is.null(input$sex) | Sex %in% input$sex,
+          is.null(input$direction) | Direction %in% input$direction
        ) 
     #   mutate(Action = paste('<a class="go-map" href="" data-lat="', Latitude, '" data-long="', Longitude, '"><i class="fa fa-crosshairs"></i></a>', sep=""))
     #action <- DT::dataTableAjax(session, df)
@@ -55,28 +55,3 @@ function(input, output, session) {
   
   
 }
-=======
-
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
-library(shiny)
-
-shinyServer(function(input, output) {
-
-  output$distPlot <- renderPlot({
-
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-
-  })
-
-})
->>>>>>> 4a5f4a2fa7cd5cf20ec062af290c9ef2d81947dc
