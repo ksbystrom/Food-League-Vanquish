@@ -34,6 +34,7 @@ x <- as.character(x)
 injdata$Collision.Date <- as.Date(injdata$Collision.Date, format = '%d/%m/%Y')
 injdata$Collision.Date
 
+#Dropping all of the variables we do not need
 injdata$Modes <- droplevels.factor(injdata$Modes, exclude = c("Mot-Ped", "Ped-Unk", "Single Mot", "Single Mot", "Single Ped", "Single Veh", "Veh-Mot", "Veh-Ped", "Veh-Veh"))
 injdata <- na.omit(injdata)
 
@@ -189,40 +190,37 @@ wordcloudFUN = function(newdataframe){
 clusteringFUN= function(newdataframe)
 {
   
-  
-  details<- BMColCleanData$details
-  
+  details<- newdataframe$details
   ## creating clustering function 
   details_source <- VectorSource(details)
-  
   # Make a volatile corpus: details_corpus
   details_corpus <- VCorpus(details_source)
-  
   # Print out details_corpus
   details_corpus
-  
-  # Print the content of the 15th tweet in details_corpus
+  # Print the content of the 15th item in details_corpus
   details_corpus[[15]]$content
   
   clean_corp <- clean_corpus(details_corpus)
   clean_corp[[20]][1]
   
-  
-  
   # Create the dtm from the corpus: details_dtm
   clean_corp
-  
   details_dtm <- DocumentTermMatrix(clean_corp)
   
-  # Print out coffee_dtm data
+  # Print out 
   details_dtm
   
+  ##get the top20######
+  toptwenty<-findFreqTerms(details_dtm , 20)
   
   # Convert coffee_dtm to a matrix: coffee_m
   details_m <- as.matrix(details_dtm)
+  newdata<- details_m[,toptwenty]
+  lmao<-data.frame(newdata )
   
+ 
   # Print the dimensions of coffee_m
-  dim(details_m)
+  dim(lmao)
   
   # Review a portion of the matrix
   details_m[14:16, 100:105]
@@ -230,21 +228,19 @@ clusteringFUN= function(newdataframe)
   
   # Create a TDM from clean_corp: coffee_tdm
   details_tdm <- TermDocumentMatrix(clean_corp)
-  
-  
   details_tdm2 <- removeSparseTerms(details_tdm, sparse = 0.975)
   
-  hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete") 
+  hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete")
+  DF <- data.frame(as.matrix(details_tdm2), stringsAsFactors=FALSE)
+  label_back <-t(data.frame(DF,cutree(hc,k=9)))
+  row.names(label_back) <- NULL
   
-  #cutree cuts a tree into several groups either by specifying the desired number(s) of groups
-  cluscutree <- cutree(hc, k = 6)
+  cluscutree <- cutree(hc, k = 9)
+  dataFrame <- data.frame(cutree(hc, k = 9))
   
-  ## Compare the 2 and 4 grouping:
-  g24 <- cutree(hc, k = c(2,4))
-  table(grp2 = g24[,"2"], grp4 = g24[,"4"])
   # Plot a dendrogram
   plot(hc)
-  return (cluscutree)
+  return (dataFrame)
   
   
 }
@@ -267,12 +263,9 @@ head(BMColCleanData,4)
 
 FrequencyPlotFUN(BMColCleanData)
 wordcloudFUN(BMColCleanData)
-clusteringFUN(BMColCleanData)
+lol <-clusteringFUN(BMColCleanData)
 
-
-
-
-###### NEARMISS DATA
+t###### NEARMISS DATA
 BikemapsnearMiss <- read_csv("Bikemaps(nearMiss).csv")
 BMnearmissCleanData<- datacleanFun(BikemapsnearMiss$date ,BikemapsnearMiss$details, BikemapsnearMiss$age, BikemapsnearMiss$sex,BikemapsnearMiss$incident_with)
 FrequencyPlotFUN(BMnearmissCleanData)
