@@ -103,9 +103,5 @@ install.packages("mosaic")
 mosaicplot(DA2, color = c("cadetblue1", "darkgrey"), xlab = "Injury Type", ylab = "Age Group", shade = TRUE)
 mosaicplot(DA2, color = TRUE, shade = TRUE, xlab = "Injury Type", ylab = "Age Group")
 mosaic(DA2, shade = TRUE, legend = TRUE)
-=======
-bikemap <- read.csv("Bikemaps.csv")
-bikemap
->>>>>>> b8fc2618c17fcdda8bb0061b30ff7c7765efa8c9
 ```
 
