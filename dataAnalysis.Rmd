@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 bike.collision <- read.csv("Bikemaps(collision).csv")
 bike.collision
 
-<<<<<<< HEAD
 bike.collision$dateToUse <- lapply(bike.collision$dateToUse, function(x) format(as.Date(x, format ='%Y-%m-%d'), '%Y-%m-%d')) #if we didnt put the second part in the function, then R will calculate the date since the origin which is from 1970.
 
 injury$Collision.Date <- as.Date(injury$Collision.Date, format = '%d/%m/%Y')
