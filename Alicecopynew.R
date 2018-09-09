@@ -162,9 +162,7 @@ FrequencyPlotFUN= function(newdataframe){
   return(frequent_terms)
   
 }
-BMColCleanData<- datacleanFun(Bikemapscoll$date ,Bikemapscoll$details, Bikemapscoll$age, Bikemapscoll$sex,Bikemapscoll$incident_with)
-head(BMColCleanData,4)
-FrequencyPlotFUN(BMColCleanData)
+
 
 ## Creating a function to make a word cloud of the cleaned data(see function above)
 wordcloudFUN = function(newdataframe){
@@ -190,7 +188,9 @@ wordcloudFUN = function(newdataframe){
 }
 clusteringFUN= function(newdataframe)
 {
-  details<- newdataframe$details
+  
+  
+  details<- BMColCleanData$details
   
   ## creating clustering function 
   details_source <- VectorSource(details)
@@ -236,8 +236,16 @@ clusteringFUN= function(newdataframe)
   
   hc <- hclust(d = dist(details_tdm2, method = "euclidean"), method = "complete") 
   
+  #cutree cuts a tree into several groups either by specifying the desired number(s) of groups
+  cluscutree <- cutree(hc, k = 10)
+  
+  ## Compare the 2 and 4 grouping:
+  g24 <- cutree(hc, k = c(2,4))
+  table(grp2 = g24[,"2"], grp4 = g24[,"4"])
   # Plot a dendrogram
   plot(hc)
+  return (cluscutree)
+  
   
 }
 
