@@ -38,24 +38,37 @@ injdata$Modes <- droplevels.factor(injdata$Modes, exclude = c("Mot-Ped", "Ped-Un
 injdata <- na.omit(injdata)
 
 
+Severeinjdata <-injdata[which(injdata$Injury.Type == "Severe"),]
+Minorinjdata <-injdata[which(injdata$Injury.Type == "Minor"),]
+
 ## Tabulate
-tab <- table(cut(injdata$Collision.Date, 'month'))
+Stab <- table(cut(Severeinjdata$Collision.Date, 'month'))
+Mtab <- table(cut(Minorinjdata$Collision.Date, 'month'))
 
 ## Format
-TSinjuries <-data.frame(Date=format(as.Date(names(tab)), '%m/%Y'),
-           Frequency=as.vector(tab))
+Severeinjuries <-data.frame(Date=format(as.Date(names(Stab)), '%m/%Y'),
+                           Frequency=as.vector(Stab))
+Minorinjuries <-data.frame(Date=format(as.Date(names(Mtab)), '%m/%Y'),
+           Frequency=as.vector(Mtab))
 
-library(TSA)
 
-names(TSinjuries)
-time = TSinjuries$Date
+names(Severeinjuries)
+Severetime = Severeinjuries$Date
+Severefrequency = Severeinjuries$Frequency
 
-frequency = TSinjuries$Frequency
+Minortime = Minorinjuries$Date
+Minorfrequency = Minorinjuries$Frequency
 
-plot(frequency, type='l', xaxt = 'n', main = "Time Series of Injuries")
-axis(1, at=c(12, 24, 36, 48, 60, 72, 84, 96, 108, 120), 
+
+
+
+
+plot(Minorfrequency, type='l', xaxt = 'n', main = "Time Series of Injuries from Cyclists",col="blue", lwd=3,  xlab="Time", ylab="Frequency")
+lines(Severefrequency, col="green",lwd=3)
+axis(1, at=c(12, 24, 36, 48, 60, 72, 84, 96, 108, 120),
      labels = c("2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")
      )
+legend(x = 0.005, y = 46, legend = c("Minor Injuries", "Severe Injuries"),lty=1,col=c("blue","green"), bty="n",cex=1.2,lwd=3)
 
 
 
